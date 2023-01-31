@@ -4,6 +4,7 @@ import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import renderer.DebugDraw;
+import renderer.Framebuffer;
 import scenes.LevelEditorScene;
 import scenes.LevelScene;
 import scenes.Scene;
@@ -18,6 +19,8 @@ public class Window {
     private String title;
     private long glfwWindow;
     private ImGUILayer imGuiLayer;
+    private Framebuffer framebuffer;
+
     public float r,g,b,a;
     private boolean fadeToBlack = false;
     private static Window window = null;
@@ -127,6 +130,8 @@ public class Window {
         this.imGuiLayer = new ImGUILayer(glfwWindow);
         this.imGuiLayer.initImGui();
 
+        this.framebuffer = new Framebuffer(1920, 1080);
+
         Window.changeScene(0);
     }
 
@@ -144,10 +149,12 @@ public class Window {
             glClearColor(r, g, b, a);
             glClear(GL_COLOR_BUFFER_BIT);
 
+            this.framebuffer.bind();
             if (dt >= 0) {
                 DebugDraw.draw();
                 currentScene.update(dt);
             }
+            this.framebuffer.unbind();
 
             this.imGuiLayer.update(dt, currentScene);
             glfwSwapBuffers(glfwWindow);

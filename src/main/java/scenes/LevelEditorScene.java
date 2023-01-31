@@ -37,8 +37,9 @@ public class LevelEditorScene extends Scene {
         sprites = AssetPool.getSpritesheet("assets/images/spritesheets/decorationsAndBlocks.png");
         //DebugDraw.addLine2D(new Vector2f(0,0), new Vector2f(800, 800), new Vector3f(1,0,0), 120);
         if (levelLoaded) {
-            this.activeGameObject = gameObjects.get(0);
-            this.activeGameObject.addComponent(new Rigidbody());
+            if(gameObjects.size() > 0) {
+                this.activeGameObject = gameObjects.get(0);
+            }
             return;
         }
 
