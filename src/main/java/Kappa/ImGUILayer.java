@@ -1,12 +1,14 @@
 package Kappa;
 
 import editor.GameViewWindow;
+import editor.PropertiesWindow;
 import imgui.*;
 import imgui.callback.ImStrConsumer;
 import imgui.callback.ImStrSupplier;
 import imgui.flag.*;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.type.ImBoolean;
+import renderer.PickingTexture;
 import scenes.Scene;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -21,8 +23,13 @@ public class ImGUILayer {
     // LWJGL3 renderer (SHOULD be initialized)
     private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
 
-    public ImGUILayer(long glfwWindow) {
+    private GameViewWindow gameViewWindow;
+    private PropertiesWindow propertiesWindow;
+
+    public ImGUILayer(long glfwWindow, PickingTexture pickingTexture) {
         this.glfwWindow = glfwWindow;
+        this.gameViewWindow = new GameViewWindow();
+        this.propertiesWindow = new PropertiesWindow(pickingTexture);
     }
 
     // Initialize Dear ImGui.
@@ -121,7 +128,7 @@ public class ImGUILayer {
                 ImGui.setWindowFocus(null);
             }
 
-            if (!io.getWantCaptureMouse()) {
+            if (!io.getWantCaptureMouse() || gameViewWindow.getWantCaptureMouse()) {
                 MouseListener.mouseButtonCallback(w, button, action, mods);
             }
         });
@@ -162,7 +169,7 @@ public class ImGUILayer {
 
         // Fonts merge example
         fontConfig.setPixelSnapH(true);
-        fontAtlas.addFontFromFileTTF("assets/fonts/arial.ttf", 32, fontConfig);
+        fontAtlas.addFontFromFileTTF("assets/fonts/arial.ttf", 16, fontConfig);
 
         fontConfig.destroy(); // After all fonts were added we don't need this config more
 
@@ -182,9 +189,11 @@ public class ImGUILayer {
         // Any Dear ImGui code SHOULD go between ImGui.newFrame()/ImGui.render() methods
         ImGui.newFrame();
         setupDockSpace();
-        currentScene.sceneImgui();
+        currentScene.imgui();
         ImGui.showDemoWindow();
-        GameViewWindow.imGui();
+        gameViewWindow.imgui();
+        propertiesWindow.update(dt, currentScene);
+        propertiesWindow.imgui();
         ImGui.end();
         ImGui.render();
 

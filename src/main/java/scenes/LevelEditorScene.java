@@ -36,12 +36,7 @@ public class LevelEditorScene extends Scene {
         this.camera = new Camera(new Vector2f(-250, 0));
         sprites = AssetPool.getSpritesheet("assets/images/spritesheets/decorationsAndBlocks.png");
         //DebugDraw.addLine2D(new Vector2f(0,0), new Vector2f(800, 800), new Vector3f(1,0,0), 120);
-        if (levelLoaded) {
-            if(gameObjects.size() > 0) {
-                this.activeGameObject = gameObjects.get(0);
-            }
-            return;
-        }
+
 
 //        obj1 = new GameObject("Object 1", new Transform(new Vector2f(200, 100),
 //                new Vector2f(256, 256)), 2);
@@ -101,7 +96,10 @@ public class LevelEditorScene extends Scene {
         for (GameObject go : this.gameObjects) {
             go.update(dt);
         }
+    }
 
+    @Override
+    public void render() {
         this.renderer.render();
     }
 
