@@ -1,5 +1,6 @@
 package components;
 
+import Kappa.Camera;
 import Kappa.Window;
 import jdk.vm.ci.meta.Constant;
 import org.joml.Vector2f;
@@ -11,17 +12,18 @@ import util.Settings;
 public class GridLines extends Component {
     @Override
     public void update(float dt){
-        Vector2f cameraPos = Window.getScene().camera().position;
-        Vector2f projectionSize = Window.getScene().camera().getProjectionSize();
+        Camera camera = Window.getScene().camera();
+        Vector2f cameraPos = camera.position;
+        Vector2f projectionSize = camera.getProjectionSize();
 
-        int firstX = ((int)(cameraPos.x / Settings.GRID_WIDTH) - 1) * Settings.GRID_WIDTH;
-        int firstY = ((int)(cameraPos.y / Settings.GRID_HEIGHT) - 1) * Settings.GRID_HEIGHT;
+        int firstX = ((int)(cameraPos.x * camera.getZoom() / Settings.GRID_WIDTH) - 1) * Settings.GRID_WIDTH;
+        int firstY = ((int)(cameraPos.y * camera.getZoom()/ Settings.GRID_HEIGHT) - 1) * Settings.GRID_HEIGHT;
 
-        int numVertLines = (int)(projectionSize.x / Settings.GRID_WIDTH) + 2;
-        int numHorzLines = (int)(projectionSize.y / Settings.GRID_HEIGHT) + 2;
+        int numVertLines = (int)(projectionSize.x * camera.getZoom() / Settings.GRID_WIDTH) + 2;
+        int numHorzLines = (int)(projectionSize.y * camera.getZoom() / Settings.GRID_HEIGHT) + 2;
 
-        int height = (int)projectionSize.y + Settings.GRID_HEIGHT * 2;
-        int width = (int)projectionSize.x + Settings.GRID_WIDTH * 2;
+        int height = (int)(projectionSize.y * camera.getZoom()) + Settings.GRID_HEIGHT * 2;
+        int width = (int)(projectionSize.x * camera.getZoom()) + Settings.GRID_WIDTH * 2;
 
         int maxLines = Math.max(numVertLines, numHorzLines);
         Vector3f colour = new Vector3f(0.2f, 0.2f, 0.2f);
