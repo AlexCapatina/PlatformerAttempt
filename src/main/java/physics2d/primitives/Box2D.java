@@ -2,7 +2,6 @@ package physics2d.primitives;
 
 import org.joml.Vector2f;
 import physics2d.rigidbody.Rigidbody2D;
-import util.JMath;
 
 public class Box2D {
     private Vector2f size = new Vector2f();
@@ -41,5 +40,9 @@ public class Box2D {
         }
 
         return vertices;
+    }
+
+    public Rigidbody2D getRigidbody(){
+        return this.rigidbody;
     }
 }
