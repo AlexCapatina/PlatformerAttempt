@@ -2,11 +2,9 @@ package components;
 
 import Kappa.Camera;
 import Kappa.Window;
-import jdk.vm.ci.meta.Constant;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import renderer.DebugDraw;
-import sun.security.pkcs11.wrapper.Constants;
 import util.Settings;
 
 public class GridLines extends Component {

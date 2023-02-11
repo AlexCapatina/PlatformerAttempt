@@ -1,7 +1,6 @@
 package physics2d.rigidbody;
 
 import org.joml.Vector2f;
-import org.joml.Vector4f;
 import physics2d.primitives.AABB;
 import physics2d.primitives.Box2D;
 import physics2d.primitives.Circle;
@@ -12,6 +11,9 @@ public class IntersectionDetector2D {
         public static boolean pointOnLine(Vector2f point, Line2D line){
                 float dy = line.getEnd().y - line.getStart().y;
                 float dx = line.getEnd().x - line.getStart().x;
+                if(dx == 0.0f){
+                        return KappaMath.compare(point.x, line.getStart().x);
+                }
                 float m = dy / dx;
 
                 float slope = line.getEnd().y - (m * line.getEnd().x);
