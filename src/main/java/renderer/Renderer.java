@@ -2,9 +2,9 @@ package renderer;
 
 import Kappa.GameObject;
 import components.SpriteRenderer;
+import org.joml.Vector2f;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -58,4 +58,5 @@ public class Renderer {
             batch.render();
         }
     }
+
 }
