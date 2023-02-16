@@ -1,9 +1,7 @@
 package physics2d.rigidbody;
 
 import org.joml.Vector2f;
-import physics2d.primitives.AABB;
-import physics2d.primitives.Box2D;
-import physics2d.primitives.Circle;
+import physics2d.primitives.*;
 import renderer.Line2D;
 import util.KappaMath;
 
@@ -105,5 +103,178 @@ public class IntersectionDetector2D {
                 AABB aabb = new AABB(box.getMin(), box.getMax());
 
                 return lineAndAABB(localLine, aabb);
+        }
+
+        //Raycasts
+        public static boolean raycast(Circle circle, Ray2D ray, RaycastResult result) {
+                RaycastResult.reset(result);
+
+                Vector2f originToCircle = new Vector2f(circle.getCentre().sub(ray.getOrigin()));
+                float radiusSquared = circle.getRadius() * circle.getRadius();
+                float originToCircleLengthSquared = originToCircle.lengthSquared();
+
+                //Project the vector from the ray origin onto the direction of the ray
+                float a = originToCircle.dot(ray.getDirection());
+                float bSq = originToCircleLengthSquared - (a * a);
+                if(radiusSquared - bSq < 0.0f){
+                        return false;
+                }
+
+                float f = (float)Math.sqrt(radiusSquared - bSq);
+                float t = 0;
+                if(originToCircleLengthSquared < radiusSquared) {
+                        //Ray starts inside the circle
+                        t = a + f;
+                }else{
+                        t = a-f;
+                }
+
+                if(result != null){
+                        Vector2f point = new Vector2f(ray.getOrigin()).add(new Vector2f(ray.getDirection()).mul(t));
+                        Vector2f normal = new Vector2f(point).sub(circle.getCentre());
+                        normal.normalize();
+
+                        result.init(point, normal, t, true);
+                }
+
+                return true;
+
+        }
+
+        public static boolean raycast(AABB box, Ray2D ray, RaycastResult result) {
+                RaycastResult.reset(result);
+                Vector2f unitVector = ray.getDirection();
+                unitVector.normalize();
+                unitVector.x = (unitVector.x != 0) ? 1.0f / unitVector.x : 0f;
+                unitVector.y = (unitVector.y != 0) ? 1.0f / unitVector.y : 0f;
+
+                Vector2f min = box.getMin();
+                min.sub(ray.getOrigin()).mul(unitVector);
+                Vector2f max = box.getMax();
+                max.sub(ray.getOrigin()).mul(unitVector);
+
+                float tMin = Math.max(Math.min(min.x, max.x), Math.min(min.y, max.y));
+                float tMax = Math.min(Math.max(min.x, max.x), Math.max(min.y, max.y));
+                if(tMax < 0 || tMin > tMax){
+                        return false;
+                }
+
+                float t = (tMin < 0f) ? tMax : tMin;
+                boolean hit = t > 0.0f;
+                // && t * T < ray.getMaximum();
+                if(!hit) {
+                        return false;
+                }
+                if(result != null){
+                        Vector2f point = new Vector2f(ray.getOrigin()).add(new Vector2f(ray.getDirection()).mul(t));
+                        Vector2f normal = new Vector2f(ray.getOrigin()).sub(point);
+                        normal.normalize();
+
+                        result.init(point, normal, t, true);
+                }
+                return true;
+        }
+
+        public static boolean raycast(Box2D box, Ray2D ray, RaycastResult result) {
+                RaycastResult.reset(result);
+
+                Vector2f size = box.getHalfSize();
+                Vector2f xAxis = new Vector2f(1,0);
+                Vector2f yAxis = new Vector2f(0,1);
+                KappaMath.rotate(xAxis, -box.getRigidbody().getRotation(), new Vector2f(0,0));
+                KappaMath.rotate(yAxis, -box.getRigidbody().getRotation(), new Vector2f(0,0));
+
+                Vector2f p = new Vector2f(box.getRigidbody().getPosition().sub(ray.getOrigin()));
+                //Project the direction of the ray on each axis of the box
+                Vector2f f = new Vector2f(xAxis.dot(ray.getDirection()), yAxis.dot(ray.getDirection()));
+                //Next, project p on every axis of the box
+                Vector2f e = new Vector2f(xAxis.dot(p), yAxis.dot(p));
+
+                float[] tArray = {0,0,0,0};
+                for (int i=0; i < 2; i++){
+                        if (KappaMath.compare(f.get(i),0)){
+                                //If the ray is parallel to the current axis, and the origin of the
+                                //ray is not inside, we have no hit
+                                if(-e.get(i) - size.get(i) > 0 || -e.get(i) + size.get(i) < 0) {
+                                        return false;
+                                }
+                                f.setComponent(i, 0.00001f);//set it to small value to avoid divide by 0
+                        }
+                        tArray[i * 2 + 0] = (e.get(i) + size.get(i)) / f.get(i);//tMax for this axis
+                        tArray[i * 2 + 1] = (e.get(i) - size.get(i)) / f.get(i);//tMin for this axis
+                }
+
+                float tmin = Math.max(Math.min(tArray[0], tArray[1]), Math.min(tArray[2], tArray[3]));
+                float tmax = Math.min(Math.max(tArray[0], tArray[1]), Math.max(tArray[2], tArray[3]));
+
+                float t = (tmin < 0f) ? tmax : tmin;
+                boolean hit = t > 0.0f;
+                // && t * T < ray.getMaximum();
+                if(!hit) {
+                        return false;
+                }
+                if(result != null){
+                        Vector2f point = new Vector2f(ray.getOrigin()).add(new Vector2f(ray.getDirection()).mul(t));
+                        Vector2f normal = new Vector2f(ray.getOrigin()).sub(point);
+                        normal.normalize();
+
+                        result.init(point, normal, t, true);
+                }
+                return true;
+        }
+
+        public static boolean circleAndLine (Circle circle, Line2D line) {
+                return lineAndCircle(line, circle);
+        }
+        public static boolean circleAndCircle(Circle c1, Circle c2) {
+                Vector2f vectorBetweenCentres = new Vector2f(c1.getCentre()).sub(c2.getCentre());
+                float radiiSum = c1.getRadius() + c2.getRadius();
+                return vectorBetweenCentres.lengthSquared() <= radiiSum * radiiSum;
+        }
+        public static boolean circleAndAABB(Circle circle, AABB box) {
+                Vector2f min = box.getMin();
+                Vector2f max = box.getMax();
+
+                Vector2f closestPointToCircle = new Vector2f(circle.getCentre());
+                if(closestPointToCircle.x < min.x) {
+                        closestPointToCircle.x = min.x;
+                }else if(closestPointToCircle.x > max.x){
+                        closestPointToCircle.x = max.x;
+                }
+
+                if(closestPointToCircle.y < min.y) {
+                        closestPointToCircle.y = min.y;
+                }else if(closestPointToCircle.y > max.y){
+                        closestPointToCircle.y = max.y;
+                }
+
+                Vector2f circleToBox = new Vector2f(circle.getCentre().sub(closestPointToCircle));
+                return circleToBox.lengthSquared() <= circle.getRadius() * circle.getRadius();
+        }
+        public static boolean circleAndBox2D (Circle circle, Box2D box){
+                //Treat box just like an AABB, after we rotate the box
+                Vector2f min = new Vector2f();
+                Vector2f max = new Vector2f(box.getHalfSize()).mul(2.0f);
+
+                //Create a circle in box's local space
+                Vector2f r = new Vector2f(circle.getCentre()).sub(box.getRigidbody().getPosition());
+                KappaMath.rotate(r, -box.getRigidbody().getRotation(), new Vector2f(0,0));
+                Vector2f localCirclePos = new Vector2f(r).add(box.getHalfSize());
+
+                Vector2f closestPointToCircle = new Vector2f(localCirclePos);
+                if(closestPointToCircle.x < min.x) {
+                        closestPointToCircle.x = min.x;
+                }else if(closestPointToCircle.x > max.x){
+                        closestPointToCircle.x = max.x;
+                }
+
+                if(closestPointToCircle.y < min.y) {
+                        closestPointToCircle.y = min.y;
+                }else if(closestPointToCircle.y > max.y){
+                        closestPointToCircle.y = max.y;
+                }
+
+                Vector2f circleToBox = new Vector2f(localCirclePos.sub(closestPointToCircle));
+                return circleToBox.lengthSquared() <= circle.getRadius() * circle.getRadius();
         }
 }

@@ -22,6 +22,9 @@ public class Box2D {
     public Vector2f getMax() {
         return new Vector2f(this.rigidbody.getPosition()).add(this.halfSize);
     }
+    public Vector2f getHalfSize(){
+        return this.halfSize;
+    }
 
     public Vector2f[] getVertices() {
         Vector2f min = getMin();
