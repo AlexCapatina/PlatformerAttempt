@@ -277,4 +277,92 @@ public class IntersectionDetector2D {
                 Vector2f circleToBox = new Vector2f(localCirclePos.sub(closestPointToCircle));
                 return circleToBox.lengthSquared() <= circle.getRadius() * circle.getRadius();
         }
+
+        //AABB vs Primitive tests
+        public static boolean AABBandCircle (Circle circle, AABB box) {
+                return circleAndAABB(circle, box);
+        }
+        public static boolean AABBandAABB (AABB box1, AABB box2) {
+                //axis aligned
+                Vector2f axesToTest[] = {new Vector2f(0,1), new Vector2f(1,0)};
+                for (int i=0; i < axesToTest.length; i++) {
+                        if (!OverlapOnAxis(box1,box2,axesToTest[i])){
+                                return false;
+                        }
+                }
+                return true;
+        }
+
+        public static boolean AABBandBox2D (AABB box1, Box2D box2) {
+                Vector2f axesToTest[] = {new Vector2f(0,1), new Vector2f(1,0), new Vector2f(0,1), new Vector2f(1,0)};
+                KappaMath.rotate(axesToTest[2], box2.getRigidbody().getRotation(), box2.getRigidbody().getPosition());
+                KappaMath.rotate(axesToTest[3], box2.getRigidbody().getRotation(), box2.getRigidbody().getPosition());
+                for (int i=0; i < axesToTest.length; i++) {
+                        if (!OverlapOnAxis(box1,box2,axesToTest[i])){
+                                return false;
+                        }
+                }
+                return true;
+        }
+
+        //Separating Axis theorem helpers
+        private static boolean OverlapOnAxis(AABB box1, AABB box2, Vector2f axis){
+                Vector2f interval1 = getInterval(box1, axis);
+                Vector2f interval2 = getInterval(box2, axis);
+                return ((interval2.x <= interval1.y) && (interval1.x <= interval2.y));
+        }
+        private static boolean OverlapOnAxis(AABB box1, Box2D box2, Vector2f axis){
+                Vector2f interval1 = getInterval(box1, axis);
+                Vector2f interval2 = getInterval(box2, axis);
+                return ((interval2.x <= interval1.y) && (interval1.x <= interval2.y));
+        }
+        private static boolean OverlapOnAxis(Box2D box1, Box2D box2, Vector2f axis){
+                Vector2f interval1 = getInterval(box1, axis);
+                Vector2f interval2 = getInterval(box2, axis);
+                return ((interval2.x <= interval1.y) && (interval1.x <= interval2.y));
+        }
+        private static Vector2f getInterval(AABB rectangle, Vector2f axis){
+                Vector2f result = new Vector2f(0,0);
+
+                Vector2f min = rectangle.getMin();
+                Vector2f max = rectangle.getMax();
+
+                Vector2f vertices[] = {
+                        new Vector2f(min.x, min.y), new Vector2f(min.x, max.y), new Vector2f(max.x, min.y), new Vector2f(max.x, max.y)
+                };
+
+                result.x = axis.dot(vertices[0]);
+                result.y = result.x;
+                for(int i=1; i < 4; i++){
+                        float projection = axis.dot(vertices[i]);
+                        if(projection < result.x){
+                                result.x = projection;
+                        }
+                        if(projection < result.y) {
+                                result.y = projection;
+                        }
+                }
+
+                return result;
+        }
+
+        private static Vector2f getInterval(Box2D rectangle, Vector2f axis){
+                Vector2f result = new Vector2f(0,0);
+
+                Vector2f vertices[] = rectangle.getVertices();
+
+                result.x = axis.dot(vertices[0]);
+                result.y = result.x;
+                for(int i=1; i < 4; i++){
+                        float projection = axis.dot(vertices[i]);
+                        if(projection < result.x){
+                                result.x = projection;
+                        }
+                        if(projection < result.y) {
+                                result.y = projection;
+                        }
+                }
+
+                return result;
+        }
 }
