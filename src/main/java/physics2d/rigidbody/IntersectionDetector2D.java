@@ -39,8 +39,8 @@ public class IntersectionDetector2D {
                 Vector2f pointLocalBoxSpace = new Vector2f();
                 KappaMath.rotate(pointLocalBoxSpace, box.getRigidbody().getRotation(), box.getRigidbody().getPosition());
 
-                Vector2f min = box.getMin();
-                Vector2f max = box.getMax();
+                Vector2f min = box.getLocalMin();
+                Vector2f max = box.getLocalMin();
 
                 return pointLocalBoxSpace.x <= max.x && min.x <= pointLocalBoxSpace.x && pointLocalBoxSpace.y <= max.y && min.y <= pointLocalBoxSpace.y;
         }
@@ -100,7 +100,7 @@ public class IntersectionDetector2D {
                 KappaMath.rotate(localEnd, theta, centre);
 
                 Line2D localLine = new Line2D(localStart, localEnd);
-                AABB aabb = new AABB(box.getMin(), box.getMax());
+                AABB aabb = new AABB(box.getLocalMin(), box.getLocalMin());
 
                 return lineAndAABB(localLine, aabb);
         }
@@ -295,8 +295,8 @@ public class IntersectionDetector2D {
 
         public static boolean AABBandBox2D (AABB box1, Box2D box2) {
                 Vector2f axesToTest[] = {new Vector2f(0,1), new Vector2f(1,0), new Vector2f(0,1), new Vector2f(1,0)};
-                KappaMath.rotate(axesToTest[2], box2.getRigidbody().getRotation(), box2.getRigidbody().getPosition());
-                KappaMath.rotate(axesToTest[3], box2.getRigidbody().getRotation(), box2.getRigidbody().getPosition());
+                KappaMath.rotate(axesToTest[2], box2.getRigidbody().getRotation(), new Vector2f());
+                KappaMath.rotate(axesToTest[3], box2.getRigidbody().getRotation(), new Vector2f());
                 for (int i=0; i < axesToTest.length; i++) {
                         if (!OverlapOnAxis(box1,box2,axesToTest[i])){
                                 return false;
