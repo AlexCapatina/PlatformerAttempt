@@ -169,7 +169,7 @@ public class Window {
             //Render pass 2 - Render actual game
             DebugDraw.beginFrame();
 
-            this.framebuffer.bind();
+            //this.framebuffer.bind();
             glClearColor(r, g, b, a);
             glClear(GL_COLOR_BUFFER_BIT);
 
@@ -181,7 +181,7 @@ public class Window {
             }
             this.framebuffer.unbind();
 
-            this.imGuiLayer.update(dt, currentScene);
+            //this.imGuiLayer.update(dt, currentScene);
             glfwSwapBuffers(glfwWindow);
             MouseListener.endFrame();
 

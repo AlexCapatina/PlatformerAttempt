@@ -1,27 +1,29 @@
 package scenes;
 
-import Kappa.*;
+import Kappa.Camera;
+import Kappa.GameObject;
+import Kappa.Prefabs;
+import Kappa.Transform;
 import components.*;
 import imgui.ImGui;
 import imgui.ImVec2;
 import org.joml.Vector2f;
-import org.joml.Vector3d;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
+import physics2d.PhysicsSystem2D;
+import physics2d.rigidbody.Rigidbody2D;
 import renderer.DebugDraw;
-import scenes.Scene;
 import util.AssetPool;
-
-import java.util.Map;
 
 public class LevelEditorScene extends Scene {
 
-    private GameObject obj1;
+    //private GameObject obj1;
     private Spritesheet sprites;
-    SpriteRenderer obj1Sprite;
     GameObject levelEditor = this.createGameObject("Level editor");
+    PhysicsSystem2D physics = new PhysicsSystem2D(1.0f / 60.0f, new Vector2f(0, -10));
+    Transform obj1, obj2;
+    Rigidbody2D rb1, rb2;
 
-    //MouseControls mouseControls = new MouseControls();
+
 
     public LevelEditorScene() {
 
@@ -30,12 +32,25 @@ public class LevelEditorScene extends Scene {
     @Override
     public void init() {
         loadResources();
+
+        obj1 = new Transform(new Vector2f(100, 500));
+        obj2 = new Transform(new Vector2f(200, 500));
+        rb1 = new Rigidbody2D();
+        rb2 = new Rigidbody2D();
+        rb1.setRawTransform(obj1);
+        rb2.setRawTransform(obj2);
+        rb1.setMass(100.0f);
+        rb2.setMass(200.0f);
+
+        physics.addRigidbody(rb1);
+        physics.addRigidbody(rb2);
+
         sprites = AssetPool.getSpritesheet("assets/images/spritesheets/decorationsAndBlocks.png");
         Spritesheet gizmos = AssetPool.getSpritesheet("assets/images/gizmos.png");
 
         this.camera = new Camera(new Vector2f(-250, 0));
         levelEditor.addComponent(new MouseControls());
-        levelEditor.addComponent(new GridLines());
+        //levelEditor.addComponent(new GridLines());
         levelEditor.addComponent(new EditorCamera(this.camera));
         levelEditor.addComponent(new GizmoSystem(gizmos));
 
@@ -44,23 +59,6 @@ public class LevelEditorScene extends Scene {
         //DebugDraw.addLine2D(new Vector2f(0,0), new Vector2f(800, 800), new Vector3f(1,0,0), 120);
 
 
-//        obj1 = new GameObject("Object 1", new Transform(new Vector2f(200, 100),
-//                new Vector2f(256, 256)), 2);
-//        obj1Sprite = new SpriteRenderer();
-//        obj1Sprite.setColor(new Vector4f(1, 0, 0, 1));
-//        obj1.addComponent(obj1Sprite);
-//        obj1.addComponent(new Rigidbody());
-//        this.addGameObjectToScene(obj1);
-//        this.activeGameObject = obj1;
-//
-//        GameObject obj2 = new GameObject("Object 2",
-//                new Transform(new Vector2f(400, 100), new Vector2f(256, 256)), 3);
-//        SpriteRenderer obj2SpriteRenderer = new SpriteRenderer();
-//        Sprite obj2Sprite = new Sprite();
-//        obj2Sprite.setTexture(AssetPool.getTexture("assets/images/blendImage2.png"));
-//        obj2SpriteRenderer.setSprite(obj2Sprite);
-//        obj2.addComponent(obj2SpriteRenderer);
-//        this.addGameObjectToScene(obj2);
     }
 
     private void loadResources() {
@@ -91,6 +89,9 @@ public class LevelEditorScene extends Scene {
         levelEditor.update(dt);
         this.camera.adjustProjection();
         DebugDraw.addCircle(new Vector2f(x,y), 64, new Vector3f(0,1,0), 1);
+        DebugDraw.addBox2D(obj1.position, new Vector2f(32,32), 0.0f, new Vector3f(1,0,0));
+        DebugDraw.addBox2D(obj2.position, new Vector2f(32,32),0.0f, new Vector3f(0,1,0));
+        physics.update(dt);
         x += 50.0f * dt;
         y += 50.0f * dt;
         DebugDraw.addBox2D(new Vector2f(400,200), new Vector2f(64, 32),angle, new Vector3f(1,0,0), 1);
