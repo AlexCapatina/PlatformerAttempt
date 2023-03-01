@@ -10,6 +10,7 @@ import imgui.ImVec2;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import physics2d.PhysicsSystem2D;
+import physics2d.primitives.Circle;
 import physics2d.rigidbody.Rigidbody2D;
 import renderer.DebugDraw;
 import util.AssetPool;
@@ -34,7 +35,8 @@ public class LevelEditorScene extends Scene {
         loadResources();
 
         obj1 = new Transform(new Vector2f(100, 500));
-        obj2 = new Transform(new Vector2f(200, 500));
+        obj2 = new Transform(new Vector2f(100, 300));
+
         rb1 = new Rigidbody2D();
         rb2 = new Rigidbody2D();
         rb1.setRawTransform(obj1);
@@ -42,8 +44,17 @@ public class LevelEditorScene extends Scene {
         rb1.setMass(100.0f);
         rb2.setMass(200.0f);
 
-        physics.addRigidbody(rb1);
-        physics.addRigidbody(rb2);
+        Circle c1 = new Circle();
+        c1.setRadius(10.0f);
+        c1.setRigidbody(rb1);
+        Circle c2 = new Circle();
+        c1.setRadius(20.0f);
+        c1.setRigidbody(rb2);
+        rb1.setCollider(c1);
+        rb2.setCollider(c2);
+
+        physics.addRigidbody(rb1, true);
+        physics.addRigidbody(rb2, false);
 
         sprites = AssetPool.getSpritesheet("assets/images/spritesheets/decorationsAndBlocks.png");
         Spritesheet gizmos = AssetPool.getSpritesheet("assets/images/gizmos.png");
@@ -88,13 +99,13 @@ public class LevelEditorScene extends Scene {
     public void update(float dt) {
         levelEditor.update(dt);
         this.camera.adjustProjection();
-        DebugDraw.addCircle(new Vector2f(x,y), 64, new Vector3f(0,1,0), 1);
-        DebugDraw.addBox2D(obj1.position, new Vector2f(32,32), 0.0f, new Vector3f(1,0,0));
-        DebugDraw.addBox2D(obj2.position, new Vector2f(32,32),0.0f, new Vector3f(0,1,0));
+        //DebugDraw.addCircle(new Vector2f(x,y), 64, new Vector3f(0,1,0), 1);
+        DebugDraw.addCircle(obj1.position, 10.0f, new Vector3f(1,0,0));
+        DebugDraw.addCircle(obj2.position, 20.0f, new Vector3f(0,1,0));
         physics.update(dt);
         x += 50.0f * dt;
         y += 50.0f * dt;
-        DebugDraw.addBox2D(new Vector2f(400,200), new Vector2f(64, 32),angle, new Vector3f(1,0,0), 1);
+        //DebugDraw.addBox2D(new Vector2f(400,200), new Vector2f(64, 32),angle, new Vector3f(1,0,0), 1);
         angle += 60.0f * dt;
         //mouseControls.update(dt)
 

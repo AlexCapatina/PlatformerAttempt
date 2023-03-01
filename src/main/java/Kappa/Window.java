@@ -177,7 +177,7 @@ public class Window {
                 DebugDraw.draw();
                 Renderer.bindShader(defaultShader);
                 currentScene.update(dt);
-                currentScene.render();
+                //currentScene.render();
             }
             this.framebuffer.unbind();
 
